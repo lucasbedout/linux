@@ -66,7 +66,7 @@ int main (int argc, char const *argv[])
                                 printf("----------------------------------\n\n");
                                 
                                 char context[MAXHOSTNAMELEN + 5];                                
-                                snprintf(context,MAXHOSTNAMELEN + 5, "(cn=%s)",hostname);
+                                snprintf(context,MAXHOSTNAMELEN + 5, "(cn=%s)", hostname);
                                                                 
                                 ret = ldap_search_s(
                                         ldap,
@@ -83,12 +83,12 @@ int main (int argc, char const *argv[])
                                         ldap_perror(ldap,error);
                                         printf("%s",error);                                        
                                 }
-
+				int count = ldap_count_entries(ldap, results);
+				printf("Nombre de résultats : %d \n", count);
                                 entry = ldap_first_entry(ldap, results);
                                 if (!entry) {
                                         printf("\033[33;m%s workstation not found !\033[00m\n", hostname);
-                                        
-return 1;
+                                        return 1;
                                 }else{
                                         printf("\033[33;m%s workstation found !\033[00m\n", hostname);
                                 }
@@ -113,12 +113,12 @@ return 1;
                                 vals = (char**) ldap_get_values(ldap,entry,"objectClass");
 
                                 for(i=0;vals[i] != NULL;i++){
-                                        if (strcmp(vals[i],"groupPolicyDescriptor") ) {
+                                        if (strcmp(vals[i],"gpoDescriptor") ) {
                                                 haveGpoDescriptor = 1;
                                                 printf("\033[33;mGPO Found !\033[00m\n");
                                                 char **uri = ldap_get_values(ldap,entry,"uri");
                                                 printf("\033[33;mScript path: %s !\033[00m\n",uri[0]);
-                                                // system("/bin/sh -c %s"); %s = uri[0]
+                                                //system("/bin/sh -c %s"); %s = uri[0]
                                                 break;
                                         }
                                 }

@@ -66,7 +66,7 @@ int main (int argc, char const *argv[])
                                 printf("----------------------------------\n\n");
                                 
                                 char context[MAXHOSTNAMELEN + 5];                                
-                                snprintf(context,MAXHOSTNAMELEN + 5, "(cn=tcho)");
+                                snprintf(context,MAXHOSTNAMELEN + 5, "(cn=%s)", hostname);
                                                                 
                                 ret = ldap_search_s(
                                         ldap,
@@ -109,16 +109,40 @@ int main (int argc, char const *argv[])
                                 printf("Searching groupPolicyDescriptor into OU container name: %s of %s\n",ou,context);
                                 printf("----------------------------------\n\n");
                                 
+                                char newDN[255];
+				char prec[255];                                
+                                snprintf(prec,255, "(id=*)");
+				snprintf(newDN, 255, "cn=%s, ou=%s, %s", hostname,ou, BASE_DN);
+
+                                ret = ldap_search_s(
+                                        ldap,
+                                        newDN,
+                                        LDAP_SCOPE_SUBTREE,
+                                        prec,
+                                        NULL,
+                                        0,
+                                        &results);
+                                
+                                if(ret != LDAP_SUCCESS){
+                                        printf("Unable to perform search\n");
+                                        char *error;
+                                        ldap_perror(ldap,error);
+                                        printf("%s",error);                                        
+                                }
+
+                                entry = ldap_first_entry(ldap, results);
                                 
                                 vals = (char**) ldap_get_values(ldap,entry,"objectClass");
 
                                 for(i=0;vals[i] != NULL;i++){
-                                        if (strcmp(vals[i],"groupPolicyDescriptor") ) {
+                                        if (strcmp(vals[i],"gpoDescriptor") ) {
                                                 haveGpoDescriptor = 1;
                                                 printf("\033[33;mGPO Found !\033[00m\n");
                                                 char **uri = ldap_get_values(ldap,entry,"uri");
                                                 printf("\033[33;mScript path: %s !\033[00m\n",uri[0]);
-                                                // system("/bin/sh -c %s"); %s = uri[0]
+						char command[5000];
+						snprintf(command, 5000, "/bin/sh -c %s", uri[0]); 
+                                                system(command); 
                                                 break;
                                         }
                                 }
@@ -139,3 +163,4 @@ int main (int argc, char const *argv[])
         
         return 0;
 }
+
