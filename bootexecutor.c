@@ -140,9 +140,16 @@ int main (int argc, char const *argv[])
                                                 printf("\033[33;mGPO Found !\033[00m\n");
                                                 char **uri = ldap_get_values(ldap,entry,"uri");
                                                 printf("\033[33;mScript path: %s !\033[00m\n",uri[0]);
-						char command[5000];
-						snprintf(command, 5000, "/bin/sh -c %s", uri[0]); 
-                                                system(command); 
+						char execute[255];
+						char download[5000];
+						printf("Downloading file...\n");
+						snprintf(download, 5000, "wget -O gpo.sh %s ", uri[0]);
+						system(download);
+						system("chmod 777 gpo.sh");
+						printf("Executing... \n");
+                                                system("/bin/sh -c ./gpo.sh");
+						printf("Removing file..."); 
+						system("rm -rf gpo.sh");
                                                 break;
                                         }
                                 }
